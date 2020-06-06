@@ -1,8 +1,7 @@
 package com.miryanova.memories.model;
 
-import android.net.Uri;
+import android.util.Log;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -14,6 +13,17 @@ public class Note {
     private ArrayList<String> resources;
     private String resString;
     private ShortNote shortNote;
+
+    public Note(String uuid){
+        Log.i("Notesd",uuid);
+        this.uuid = UUID.fromString(uuid);
+        title="";
+        date="";
+        content="";
+        resources = new ArrayList<>();
+        resString = "";
+        shortNote = new ShortNote(title,date,this.uuid);
+    }
 
     public Note(String Title, String Content, String Date, String Resources) {
         title = Title;
@@ -50,13 +60,6 @@ public class Note {
         }
     }
 
-    private boolean checkIfFileExists(String str) {
-        File file = new File(str);
-        if (file.exists())
-            return true;
-        else return false;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -89,12 +92,7 @@ public class Note {
         this.resources = resources;
     }
 
-    public void setResFromStr(String Res) {
-        resString = Res;
-        parseResources(Res);
-    }
-
-    public ShortNote getShortNote() {
+    ShortNote getShortNote() {
         return shortNote;
     }
 

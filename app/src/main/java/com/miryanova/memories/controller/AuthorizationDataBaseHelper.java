@@ -8,10 +8,10 @@ import com.miryanova.memories.model.AuthorizationContract.AuthorizationEntry;
 
 public class AuthorizationDataBaseHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "Authorization.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "Authorization.db";
 
-    public AuthorizationDataBaseHelper(Context context) {
+    AuthorizationDataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

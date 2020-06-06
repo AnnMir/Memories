@@ -29,13 +29,12 @@ public class Edit extends AppCompatActivity {
     private TextView date;
     private String day;
     private String uuid;
-    private String className;
     private EditText resources;
     private StringBuilder res;
-    private NotesController notesController;
     Calendar dateTime = Calendar.getInstance();
     static final int RESOURCES_REQUEST = 1;
     private final static String LOG_TAG = "Edit";
+    private final static int EDIT_RESULT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,22 +45,20 @@ public class Edit extends AppCompatActivity {
         date = findViewById(R.id.date);
         resources = findViewById(R.id.resources);
         res = new StringBuilder();
-        notesController = new NotesController(this.getApplicationContext());
-        className = getIntent().getStringExtra("Class");
-        if (className.equals("MainMenu")) {
+        String Title = getIntent().getStringExtra("Title");
+        String Date = getIntent().getStringExtra("Date");
+        if(Date.equals(""))
             setInitialDateTime();
-        } else {
-            String Title = getIntent().getStringExtra("Title");
-            String Date = getIntent().getStringExtra("Date");
-            String Content = getIntent().getStringExtra("Content");
-            uuid = getIntent().getStringExtra("UUID");
-            res.append(getIntent().getStringExtra("Resources"));
-            resources.setText(res.toString());
-            title.setText(Title);
+        else {
             date.setText(Date);
             day = Date;
-            content.setText(Content);
         }
+        String Content = getIntent().getStringExtra("Content");
+        uuid = getIntent().getStringExtra("UUID");
+        res.append(getIntent().getStringExtra("Resources"));
+        resources.setText(res.toString());
+        title.setText(Title);
+        content.setText(Content);
     }
 
     // установка начальных даты и времени
@@ -76,7 +73,8 @@ public class Edit extends AppCompatActivity {
         DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                day = dayOfMonth + "-" + month + "-" + year;
+                int m = month+1;
+                day = dayOfMonth + "-" + m + "-" + year;
                 date.setText(day);
             }
         };
@@ -91,28 +89,29 @@ public class Edit extends AppCompatActivity {
         String Title = title.getText().toString();
         String Content = content.getText().toString();
         String Resources = resources.getText().toString();
-        if (className.equals("MainMenu")) {
+        if (uuid.equals("")) {
             if(!Title.equals("") || !Content.equals("") || !Resources.equals("")) {
                 Note note = new Note(Title, Content, day, Resources);
-                User.getUser().addNote(note);
-                notesController.addNote(note.getUuid().toString(), User.getUser().getLogin(), note.getTitle(), note.getContent(), note.getDate(), note.getResString());
+                User.getUser(this.getApplicationContext()).addNote(note.getUuid().toString(), note.getTitle(), note.getContent(), note.getDate(), note.getResString());
                 Toast.makeText(view.getContext(), Title + " " + Content + " " + Resources + " " + day + " added", Toast.LENGTH_SHORT).show();
             }else{
                 Toast.makeText(view.getContext(),"Blank note won't be saved", Toast.LENGTH_LONG).show();
             }
         } else {
-            Note note = new Note(Title, Content, day, Resources, uuid);
-            User.getUser().changeNote(Title, day, Content, Resources, uuid);
-            notesController.updateNote(note.getUuid().toString(), User.getUser().getLogin(), note.getTitle(),note.getContent(),note.getDate(),note.getResString());
+            User.getUser(this.getApplicationContext()).changeNote(Title, day, Content, Resources, uuid);
+            Log.i("Notesd","intent");
+            Intent intent = new Intent();
+            intent.putExtra("Title",Title);
+            intent.putExtra("Date",day);
+            intent.putExtra("UUID",uuid);
+            setResult(EDIT_RESULT, intent);
             Toast.makeText(view.getContext(), Title + " " + Content + " " + Resources + " " + day + " changed", Toast.LENGTH_SHORT).show();
         }
-        Intent intent = new Intent(view.getContext(), MainMenu.class);
-        startActivity(intent);
+        finish();
     }
 
     public void cancel(View view) {
-        Intent intent = new Intent(view.getContext(), MainMenu.class);
-        startActivity(intent);
+        finish();
     }
 
     public void addPicture(View view) {

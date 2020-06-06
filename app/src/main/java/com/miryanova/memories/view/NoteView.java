@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -19,7 +20,6 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.miryanova.memories.R;
-import com.miryanova.memories.controller.NotesController;
 import com.miryanova.memories.model.User;
 
 import java.io.IOException;
@@ -29,20 +29,21 @@ import android.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class NoteView extends AppCompatActivity {
-    TextView title;
-    TextView date;
-    TextView Uuid;
-    EditText content;
-    LinearLayout gallery;
-    LinearLayout videoGallery;
-    String uuid;
-    ArrayList<String> res;
-    MediaPlayer audioPlayer;
-    ImageButton play, pause, stop, prev, next;
-    ArrayList<String> audios;
-    int iterator;
-    AlertDialog.Builder alert;
-    NotesController notesController;
+    private TextView title;
+    private TextView date;
+    private TextView Uuid;
+    private EditText content;
+    private LinearLayout gallery;
+    private LinearLayout videoGallery;
+    private String uuid;
+    private ArrayList<String> res;
+    private MediaPlayer audioPlayer;
+    private ImageButton play, pause, stop, prev, next;
+    private ArrayList<String> audios;
+    private int iterator;
+    private AlertDialog.Builder alert;
+    private final static int EDIT_RESULT = 1;
+    private final static int OK = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,19 +66,19 @@ public class NoteView extends AppCompatActivity {
         play.setEnabled(false);
         prev.setEnabled(false);
         next.setEnabled(false);
-        notesController = new NotesController(this.getApplicationContext());
-        initValues();
-    }
-
-    public void initValues() {
         String Title = getIntent().getStringExtra("Title");
         String Date = getIntent().getStringExtra("Date");
         uuid = getIntent().getStringExtra("UUID");
+        initValues(Title, Date, uuid);
+    }
+
+    public void initValues(String Title, String Date, String UUID) {
+        uuid = UUID;
         Uuid.setText(uuid);
         title.setText(Title);
         date.setText(Date);
-        content.setText(User.getUser().getContent(uuid));
-        res = User.getUser().getResources(uuid);
+        content.setText(User.getUser(this.getApplicationContext()).getContent(uuid));
+        res = User.getUser(this.getApplicationContext()).getResources(uuid);
         ArrayList<String> images = getResources(uuid, "image");
         try {
             if (images.size() != 0) {
@@ -117,8 +118,21 @@ public class NoteView extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == EDIT_RESULT) {
+            if (resultCode == OK) {
+                String Title = data.getStringExtra("Title");
+                String Date = data.getStringExtra("Date");
+                String UUID = data.getStringExtra("UUID");
+                initValues(Title, Date, UUID);
+            }
+        }
+    }
+
     public ArrayList<String> getResources(String uuid, String cont) {
-        ArrayList<String> resources = User.getUser().getResources(uuid);
+        ArrayList<String> resources = User.getUser(this.getApplicationContext()).getResources(uuid);
         ArrayList<String> result = new ArrayList<>();
         for (String str : resources) {
             if (str.contains(cont)) {
@@ -240,11 +254,9 @@ public class NoteView extends AppCompatActivity {
         alert.setMessage("Вы действительно хотите удалить заметку?");
         alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                User.getUser().deleteNote(uuid);
-                notesController.deleteNote(uuid);
+                User.getUser(view.getContext()).deleteNote(uuid);
                 dialog.dismiss();
-                Intent intent = new Intent(view.getContext(), MainMenu.class);
-                startActivity(intent);
+                finish();
             }
         });
 
@@ -263,9 +275,9 @@ public class NoteView extends AppCompatActivity {
         intent.putExtra("Title", title.getText());
         intent.putExtra("Date", date.getText());
         intent.putExtra("Content", content.getText().toString());
-        intent.putExtra("Resources", User.getUser().getResString(uuid));
+        intent.putExtra("Resources", User.getUser(view.getContext()).getResString(uuid));
         intent.putExtra("UUID", uuid);
-        startActivity(intent);
+        startActivityForResult(intent, EDIT_RESULT);
     }
 
     MediaPlayer.OnCompletionListener myVideoViewCompletionListener

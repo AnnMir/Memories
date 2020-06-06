@@ -20,22 +20,6 @@ public class NotesController {
     }
 
     public ArrayList<Note> selectUserNotes(String login) {
-        return doSelect(login);
-    }
-
-    public void addNote(String uuid, String login, String title, String content, String date, String res) {
-        doInsert(uuid, login, title, content, date, res);
-    }
-
-    public void updateNote(String uuid, String login, String title, String content, String date, String res){
-        doUpdate(uuid, login, title, content, date, res);
-    }
-
-    public void deleteNote(String uuid) {
-        delete(uuid);
-    }
-
-    private ArrayList<Note> doSelect(String login) {
         ArrayList<Note> arrayList = new ArrayList<>();
         Note note;
         String selection;
@@ -69,6 +53,37 @@ public class NotesController {
         return arrayList;
     }
 
+    public Note selectNote(String uuid){
+        Note note = new Note(uuid);
+        String selection;
+        SQLiteDatabase db = dataBaseHelper.getReadableDatabase();
+        String[] projection = {
+                NotesEntry.DATE, NotesEntry.TITLE, NotesEntry.CONTENT, NotesEntry.RESOURCES};
+        String[] selectionArgs;
+        selection = NotesEntry.UUID + "=?";
+        selectionArgs = new String[]{uuid};
+        Cursor cursor = db.query(
+                NotesEntry.TABLE_NAME, // таблица
+                projection,            // столбцы
+                selection,             // столбцы для условия WHERE
+                selectionArgs,         // значения для условия WHERE
+                null,                  // Don't group the rows
+                null,                  // Don't filter by row groups
+                NotesEntry.DATE + " ASC");  // порядок сортировки
+        try {
+            while (cursor.moveToNext()) {
+                String currentDate = cursor.getString(cursor.getColumnIndex(NotesEntry.DATE));
+                String currentTitle = cursor.getString(cursor.getColumnIndex(NotesEntry.TITLE));
+                String currentContent = cursor.getString(cursor.getColumnIndex(NotesEntry.CONTENT));
+                String currentResources = cursor.getString(cursor.getColumnIndex(NotesEntry.RESOURCES));
+                note = new Note(currentTitle, currentContent, currentDate, currentResources, uuid);
+            }
+        } finally {
+            cursor.close();
+        }
+        return note;
+    }
+
     /**
      * Функция добавления записки пользователя в базу данных
      *
@@ -79,7 +94,7 @@ public class NotesController {
      * @param resources
      */
 
-    private void doInsert(String uuid, String login, String title, String content, String date, String resources) {
+    public void addNote(String uuid, String login, String title, String content, String date, String resources) {
         SQLiteDatabase db = dataBaseHelper.getWritableDatabase();
 
         //SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
@@ -97,7 +112,7 @@ public class NotesController {
         Log.d(LOG_TAG, "added");
     }
 
-    private void doUpdate(String uuid, String login, String title, String content, String date, String resources){
+    public void updateNote(String uuid, String login, String title, String content, String date, String resources){
         SQLiteDatabase db = dataBaseHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(NotesEntry.UUID, uuid);
@@ -117,7 +132,7 @@ public class NotesController {
      * @param uuid
      */
 
-    private void delete(String uuid) {
+    public void deleteNote(String uuid) {
         SQLiteDatabase db = dataBaseHelper.getReadableDatabase();
         db.delete(NotesEntry.TABLE_NAME, "UUID = ?", new String[]{uuid});
         Log.d(LOG_TAG, "deleted");

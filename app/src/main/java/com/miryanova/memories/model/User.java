@@ -1,5 +1,9 @@
 package com.miryanova.memories.model;
 
+import android.content.Context;
+
+import com.miryanova.memories.controller.NotesController;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -8,14 +12,16 @@ public class User {
     private String login;
     private String password;
     private String email;
-    private ArrayList<Note> notes;
+    private static NotesController notesController;
 
     private User() {
     }
 
-    public static User getUser() {
-        if (user == null)
+    public static User getUser(Context context) {
+        if (user == null){
             user = new User();
+            notesController = new NotesController(context);
+        }
         return user;
     }
 
@@ -23,42 +29,25 @@ public class User {
         return login;
     }
 
-    public ArrayList<Note> getNotes() {
-        return notes;
-    }
-
     public void setLogin(String login) {
         this.login = login;
-    }
-
-    public void addNote(Note note) {
-        if (notes == null)
-            notes = new ArrayList<>();
-        this.notes.add(note);
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public void setNotes(ArrayList<Note> notes) {
-        this.notes = notes;
+    public void addNote(String uuid, String title, String content, String date, String res){
+        notesController.addNote(uuid,login,title,content,date,res);
     }
 
     public ArrayList<ShortNote> getShortNotes() {
         ArrayList<ShortNote> shortNotes = new ArrayList<>();
+        ArrayList<Note> notes = notesController.selectUserNotes(login);
         for (Note note : notes) {
             shortNotes.add(note.getShortNote());
         }
@@ -66,49 +55,25 @@ public class User {
     }
 
     public String getContent(String uuid) {
-        for (Note note : notes) {
-            if (note.getUuid().toString().equals(uuid)) {
-                return note.getContent();
-            }
-        }
-        return "";
+        Note note = notesController.selectNote(uuid);
+        return note.getContent();
     }
 
     public ArrayList<String> getResources(String uuid) {
-        for (Note note : notes) {
-            if (note.getUuid().toString().equals(uuid)) {
-                return note.getResources();
-            }
-        }
-        return null;
+        Note note = notesController.selectNote(uuid);
+        return note.getResources();
     }
 
     public String getResString(String uuid) {
-        for (Note note : notes) {
-            if (note.getUuid().toString().equals(uuid)) {
-                return note.getResString();
-            }
-        }
-        return null;
+        Note note = notesController.selectNote(uuid);
+        return note.getResString();
     }
 
     public void deleteNote(String uuid) {
-        Iterator<Note> noteIterator = notes.iterator();
-        while(noteIterator.hasNext()){
-            Note note = noteIterator.next();
-            if(note.getUuid().toString().equals(uuid))
-                noteIterator.remove();
-        }
+        notesController.deleteNote(uuid);
     }
 
     public void changeNote(String Title, String Date, String Content, String res, String uuid) {
-        Iterator<Note> noteIterator = notes.iterator();
-        while(noteIterator.hasNext()){
-            Note note = noteIterator.next();
-            if(note.getUuid().toString().equals(uuid)){
-                noteIterator.remove();
-            }
-        }
-        notes.add(new Note(Title, Content, Date, res, uuid));
+        notesController.updateNote(uuid,login,Title,Content,Date,res);
     }
 }

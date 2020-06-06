@@ -19,14 +19,12 @@ import android.widget.Toast;
 
 import com.miryanova.memories.controller.AuthorizationController;
 import com.miryanova.memories.controller.CustomException;
-import com.miryanova.memories.controller.NotesController;
 import com.miryanova.memories.R;
 
 public class Authorization extends AppCompatActivity {
     private EditText login;
     private EditText password;
-    static AuthorizationController controller;
-    static NotesController notesController;
+    private AuthorizationController controller;
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
     @Override
@@ -36,7 +34,6 @@ public class Authorization extends AppCompatActivity {
         login = findViewById(R.id.login);
         password = findViewById(R.id.password);
         controller = new AuthorizationController(this.getApplicationContext());
-        notesController = new NotesController(this.getApplicationContext());
     }
 
     public void authorization(View view) {
@@ -114,15 +111,14 @@ public class Authorization extends AppCompatActivity {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // do your stuff
+                    //
                 } else {
                     Toast.makeText(Authorization.this, "Get access to gallery denied",
                             Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
-                super.onRequestPermissionsResult(requestCode, permissions,
-                        grantResults);
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

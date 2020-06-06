@@ -8,10 +8,10 @@ import com.miryanova.memories.model.NotesContract.NotesEntry;
 
 public class NotesDatabaseHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_NAME = "Notes.db";
+    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "Notes.db";
 
-    public NotesDatabaseHelper(Context context) {
+    NotesDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

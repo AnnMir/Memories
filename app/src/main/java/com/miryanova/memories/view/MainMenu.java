@@ -53,7 +53,7 @@ public class MainMenu extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        shortNotes = User.getUser().getShortNotes();
+        shortNotes = User.getUser(this.getApplicationContext()).getShortNotes();
         notesController = new NotesController(this.getApplicationContext());
 
         recyclerView = findViewById(R.id.recycler);
@@ -115,21 +115,29 @@ public class MainMenu extends AppCompatActivity {
         }));
     }
 
+    @Override
+    protected void onStart() {
+        loadNotes();
+        super.onStart();
+    }
+
     public void choose(String Title, String Date, String UUID){
         Intent intent = new Intent(this.getApplicationContext(), NoteView.class);
         intent.putExtra("Title", Title);
         intent.putExtra("Date", Date);
         intent.putExtra("UUID", UUID);
+        intent.putExtra("Content", "");
+        intent.putExtra("Resources", "");
         startActivity(intent);
     }
 
     public void loadNotes(){
-        shortNotes = User.getUser().getShortNotes();
+        shortNotes = User.getUser(this.getApplicationContext()).getShortNotes();
         recyclerView.getAdapter().notifyDataSetChanged();
     }
 
     public void deleteNote(String UUID){
-        User.getUser().deleteNote(UUID);
+        User.getUser(this.getApplicationContext()).deleteNote(UUID);
         notesController.deleteNote(UUID);
         shortNotes.clear();
         loadNotes();
@@ -137,13 +145,11 @@ public class MainMenu extends AppCompatActivity {
 
     public void edit(View view) {
         Intent intent = new Intent(this, Edit.class);
-        intent.putExtra("Class", "MainMenu");
-        startActivity(intent);
-    }
-
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(this.getApplicationContext(), Authorization.class);
+        intent.putExtra("Title", "");
+        intent.putExtra("Date", "");
+        intent.putExtra("UUID", "");
+        intent.putExtra("Content", "");
+        intent.putExtra("Resources", "");
         startActivity(intent);
     }
 }
